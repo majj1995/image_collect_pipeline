@@ -1,0 +1,21 @@
+{
+  "collection": {
+    "metadata": { "total_hits": 1 },
+    "items": [
+      {
+        "data": [
+          {
+            "nasa_id": "NASA-SPEAKER-1",
+            "title": "Space communications speaker campaign",
+            "description": "A communications technology poster.",
+            "photographer": "NASA Example"
+          }
+        ],
+        "links": [
+          { "rel": "preview", "href": "https://images.example.test/nasa-preview.jpg", "render": "image" }
+        ]
+      }
+    ],
+    "links": []
+  }
+}

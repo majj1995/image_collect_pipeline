@@ -1,0 +1,8 @@
+{
+  "tasks": [
+    {
+      "status_code": 40100,
+      "status_message": "password=test-secret must not be exposed"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "photos": {
+    "page": 3,
+    "pages": 1,
+    "perpage": 400,
+    "total": 3,
+    "photo": [
+      {
+        "id": "401",
+        "owner": "owner-401",
+        "ownername": "Flickr Studio",
+        "title": "Wireless speaker launch poster",
+        "url_o": "https://live.staticflickr.com/fixture/speaker-401_o.jpg?api_key=fixture-secret&size=original",
+        "width_o": "3600",
+        "height_o": "2400",
+        "url_l": "https://live.staticflickr.com/fixture/speaker-401_l.jpg",
+        "width_l": "2048",
+        "height_l": "1365",
+        "url_c": "https://live.staticflickr.com/fixture/speaker-401_c.jpg",
+        "width_c": "800",
+        "height_c": "533",
+        "license": "4"
+      },
+      {
+        "id": "402",
+        "owner": "owner-402",
+        "ownername": "Catalogue Archive",
+        "title": "Speaker sale catalogue",
+        "url_o": "file:///private/flickr-original.jpg",
+        "url_l": "https://live.staticflickr.com/fixture/speaker-402_l.jpg",
+        "width_l": "1600",
+        "height_l": "1200",
+        "url_c": "https://live.staticflickr.com/fixture/speaker-402_c.jpg",
+        "width_c": "800",
+        "height_c": "600"
+      },
+      {
+        "id": "403",
+        "owner": "owner-403",
+        "ownername": "Retail Graphics",
+        "title": "Compact audio promotion",
+        "url_o": "javascript:alert(1)",
+        "url_l": "file:///private/flickr-large.jpg",
+        "url_c": "https://live.staticflickr.com/fixture/speaker-403_c.jpg",
+        "width_c": "800",
+        "height_c": "800"
+      }
+    ]
+  },
+  "stat": "ok"
+}

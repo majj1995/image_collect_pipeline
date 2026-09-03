@@ -1,0 +1,36 @@
+{
+  "info": {
+    "totalrecordsperquery": 100,
+    "totalrecords": 2,
+    "pages": 1,
+    "page": 3
+  },
+  "records": [
+    {
+      "id": 501,
+      "title": "Portable radio advertisement",
+      "url": "https://harvardartmuseums.org/collections/object/501",
+      "primaryimageurl": "https://nrs.harvard.edu/urn-3:HUAM:INV501_dynmc?height=400&apikey=fixture-secret",
+      "people": [
+        { "displayname": "Harvard Design Studio", "role": "Artist" }
+      ],
+      "images": [
+        {
+          "baseimageurl": "https://nrs.harvard.edu/urn-3:HUAM:INV501_dynmc?apikey=fixture-secret",
+          "width": 3000,
+          "height": 2000
+        }
+      ]
+    },
+    {
+      "id": 502,
+      "title": "Audio equipment trade card",
+      "url": "https://harvardartmuseums.org/collections/object/502",
+      "primaryimageurl": "https://nrs.harvard.edu/urn-3:HUAM:DDC502_dynmc",
+      "people": [
+        { "name": "Retail Print Company", "role": "Publisher" }
+      ],
+      "images": []
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "result_count": 1,
+  "results": [
+    {
+      "id": "speaker-1",
+      "thumbnail": "https://images.example.test/speaker-thumb.jpg?width=320&token=secret&client_token=client-secret",
+      "url": "https://images.example.test/speaker.jpg?productId=42&X-Amz-Signature=signed&AWSAccessKeyId=aws-secret&x-oss-signature=oss-secret#private",
+      "foreign_landing_url": "https://source.example.test/speaker?productId=42&session=secret&client_secret=client-secret&GoogleAccessId=google-secret&oauth_nonce=oauth-secret#private",
+      "title": "Studio speaker",
+      "creator": "Example Creator",
+      "license": "cc0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "width": 1200,
+      "height": 900,
+      "provider": "flickr",
+      "source": "flickr"
+    }
+  ]
+}

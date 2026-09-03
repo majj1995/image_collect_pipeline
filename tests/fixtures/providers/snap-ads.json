@@ -1,0 +1,48 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "fixture-request-id",
+  "paging": {},
+  "ad_previews": [
+    {
+      "sub_request_status": "SUCCESS",
+      "ad_preview": {
+        "id": "snap-ad-42",
+        "name": "Summer speaker creative",
+        "creative_type": "WEB_VIEW",
+        "headline": "Portable speaker summer sale",
+        "top_snap_media_type": "IMAGE",
+        "top_snap_media_download_link": "https://cf-st.sc-cdn.net/d/snap-speaker-ad.380?mo=signed-fixture&uc=15",
+        "paying_advertiser_name": "Acme Audio",
+        "brand_name": "Acme",
+        "web_view_properties": {
+          "url": "https://shop.example.test/products/speaker"
+        }
+      }
+    },
+    {
+      "sub_request_status": "SUCCESS",
+      "ad_preview": {
+        "id": "snap-video-7",
+        "headline": "Speaker launch video",
+        "top_snap_media_type": "VIDEO",
+        "top_snap_media_download_link": "https://cf-st.sc-cdn.net/d/snap-speaker-video.mp4",
+        "paying_advertiser_name": "Acme Audio"
+      }
+    },
+    {
+      "sub_request_status": "SUCCESS",
+      "ad_preview": {
+        "id": "snap-composite-8",
+        "creative_type": "COMPOSITE",
+        "composite_preview": {
+          "ad_snaps": [
+            {
+              "top_snap_media_type": "VIDEO",
+              "top_snap_media_download_link": "https://cf-st.sc-cdn.net/d/composite-video.mp4"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

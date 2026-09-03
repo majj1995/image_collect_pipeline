@@ -1,0 +1,18 @@
+{
+  "references": [
+    {
+      "content": "A commercial speaker campaign image.",
+      "url": "https://source.example.test/baidu-speaker",
+      "website": "source.example.test",
+      "web_anchor": "Baidu speaker campaign",
+      "image": {
+        "url": "https://images.example.test/baidu-speaker.jpg?x-bce-process=image/resize,w_1080&Q.Sign_Algorithm=sha256&x-bce-security-token=fixture-secret&x-bce-signature=signed-secret",
+        "width": "1080",
+        "height": "1080"
+      },
+      "thumbnail_url": "https://images.example.test/baidu-speaker-thumb.jpg?x-oss-process=image/resize,w_320&X_OSS.Additional-Headers=host&OSSAccessKeyId=fixture-secret&x-oss-signature=signed-secret",
+      "source": "Legacy source fallback"
+    },
+    { "title": "No original image", "url": "https://source.example.test/no-original" }
+  ]
+}

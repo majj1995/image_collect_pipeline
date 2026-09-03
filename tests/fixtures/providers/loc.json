@@ -1,0 +1,55 @@
+{
+  "pagination": {
+    "from": 1,
+    "results": "1 - 2",
+    "last": null,
+    "total": 1,
+    "previous": null,
+    "perpage": 100,
+    "perpage_options": [25, 50, 100, 150],
+    "of": 2,
+    "next": null,
+    "current": 1,
+    "to": 2,
+    "page_list": [{ "url": null, "number": 1 }],
+    "first": null
+  },
+  "results": [
+    {
+      "access_restricted": false,
+      "aka": ["https://www.loc.gov/item/2017645977/"],
+      "campaigns": [],
+      "contributor": ["Example Design Studio"],
+      "date": "1955",
+      "dates": ["1955-01-01T00:00:00Z"],
+      "digitized": true,
+      "extract_timestamp": "2026-08-01T00:00:00Z",
+      "group": ["catalog-split-00"],
+      "hassegments": false,
+      "id": "http://www.loc.gov/item/2017645977/",
+      "image_url": [
+        "//cdn.loc.example.test/service/pnp/speaker_150px.jpg?token=fixture-secret",
+        "//cdn.loc.example.test/service/pnp/speaker_1024px.jpg?signature=fixture-secret"
+      ],
+      "index": 1,
+      "language": ["english"],
+      "mime_type": ["image/jpeg"],
+      "online_format": ["image"],
+      "original_format": ["photo, print, drawing"],
+      "partof": ["prints and photographs division"],
+      "subject": ["sound equipment", "advertising"],
+      "title": "Speaker advertising poster",
+      "url": "http://www.loc.gov/item/2017645977/"
+    },
+    {
+      "access_restricted": false,
+      "id": "https://www.loc.gov/item/invalid/",
+      "image_url": ["data:image/gif;base64,R0lGODlhAQABAAAAACw="],
+      "index": 2,
+      "online_format": ["image"],
+      "original_format": ["photo, print, drawing"],
+      "title": "Invalid image URL",
+      "url": "https://www.loc.gov/item/invalid/"
+    }
+  ]
+}

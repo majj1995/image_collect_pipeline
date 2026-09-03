@@ -1,0 +1,46 @@
+{
+  "count": 2,
+  "start": 0,
+  "limit": 400,
+  "docs": [
+    {
+      "@id": "https://dp.la/item/601",
+      "isShownAt": "https://example-archive.test/items/speaker-601",
+      "object": {
+        "@id": "https://example-archive.test/thumbnails/speaker-601.jpg?api_key=fixture-secret"
+      },
+      "hasView": [
+        {
+          "@id": "https://example-archive.test/media/speaker-601.pdf",
+          "format": "application/pdf"
+        },
+        {
+          "@id": "https://example-archive.test/media/speaker-601.jpg?token=fixture-secret&size=original",
+          "format": "image/jpeg"
+        }
+      ],
+      "sourceResource": {
+        "title": ["Speaker catalogue cover"],
+        "creator": ["DPLA Retail Studio"],
+        "type": ["image"]
+      },
+      "dataProvider": ["Example Advertising Archive"],
+      "provider": { "name": "Digital Public Library of America" }
+    },
+    {
+      "@id": "https://dp.la/item/602",
+      "isShownAt": "https://example-archive.test/items/speaker-602",
+      "object": "https://example-archive.test/thumbnails/speaker-602.jpg",
+      "hasView": [
+        { "@id": "https://example-archive.test/media/speaker-602.tif", "format": "image/tiff" }
+      ],
+      "sourceResource": {
+        "title": "Audio equipment price card",
+        "creator": "Example Department Store",
+        "type": "image"
+      },
+      "dataProvider": "Example Advertising Archive",
+      "provider": { "name": "Digital Public Library of America" }
+    }
+  ]
+}

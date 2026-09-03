@@ -1,0 +1,4 @@
+{
+  "code": 216003,
+  "message": "api_key=test-secret must not be exposed"
+}

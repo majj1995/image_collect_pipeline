@@ -1,0 +1,18 @@
+{
+  "type": "images",
+  "results": [
+    {
+      "type": "image_result",
+      "title": "Commercial speaker poster",
+      "url": "https://source.example.test/brave-speaker",
+      "source": "Example Images",
+      "thumbnail": { "src": "https://images.example.test/brave-speaker-thumb.jpg" },
+      "properties": {
+        "url": "https://images.example.test/brave-speaker.jpg",
+        "width": 1200,
+        "height": 900
+      }
+    },
+    { "title": "No original image", "url": "https://source.example.test/no-original" }
+  ]
+}

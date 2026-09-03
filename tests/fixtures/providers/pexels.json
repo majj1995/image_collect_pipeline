@@ -1,0 +1,34 @@
+{
+  "page": 3,
+  "per_page": 80,
+  "total_results": 2,
+  "photos": [
+    {
+      "id": 101,
+      "width": 2400,
+      "height": 1600,
+      "url": "https://www.pexels.com/photo/portable-speaker-sale-101/",
+      "photographer": "Lin Chen",
+      "photographer_url": "https://www.pexels.com/@lin-chen",
+      "alt": "Bluetooth speaker sale banner",
+      "src": {
+        "original": "https://images.pexels.com/photos/101/pexels-photo-101.jpeg?auto=compress&token=fixture-secret",
+        "large": "https://images.pexels.com/photos/101/pexels-photo-101-large.jpeg",
+        "medium": "https://images.pexels.com/photos/101/pexels-photo-101-medium.jpeg"
+      }
+    },
+    {
+      "id": 102,
+      "width": 1800,
+      "height": 1200,
+      "url": "https://www.pexels.com/photo/speaker-promotion-102/",
+      "photographer": "Maya Patel",
+      "alt": "Speaker promotion card",
+      "src": {
+        "original": "file:///private/pexels-original.jpg",
+        "large": "https://images.pexels.com/photos/102/pexels-photo-102-large.jpeg",
+        "medium": "https://images.pexels.com/photos/102/pexels-photo-102-medium.jpeg"
+      }
+    }
+  ]
+}

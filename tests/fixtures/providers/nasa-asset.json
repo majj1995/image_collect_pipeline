@@ -1,0 +1,8 @@
+{
+  "collection": {
+    "items": [
+      { "href": "https://images.example.test/NASA-SPEAKER-1~small.jpg" },
+      { "href": "https://images.example.test/NASA-SPEAKER-1~orig.jpg" }
+    ]
+  }
+}

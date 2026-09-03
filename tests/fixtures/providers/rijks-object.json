@@ -1,0 +1,18 @@
+{
+  "id": "https://id.rijksmuseum.nl/200100000",
+  "identified_by": [
+    { "type": "Name", "content": "Modern speaker poster" }
+  ],
+  "produced_by": {
+    "part": [
+      {
+        "assigned_by": [
+          { "assigned": [{ "notation": [{ "@language": "en", "@value": "Rijks Example Studio" }] }] }
+        ]
+      }
+    ]
+  },
+  "shows": [
+    { "id": "https://id.rijksmuseum.nl/200100000-visual" }
+  ]
+}

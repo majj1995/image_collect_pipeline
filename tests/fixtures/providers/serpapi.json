@@ -1,0 +1,15 @@
+{
+  "images_results": [
+    {
+      "position": 1,
+      "title": "SerpApi speaker poster",
+      "original": "https://images.example.test/serpapi-speaker.jpg?api_key=fixture-secret",
+      "thumbnail": "https://images.example.test/serpapi-speaker-thumb.jpg",
+      "link": "https://source.example.test/serpapi-speaker",
+      "source": "Example Images",
+      "original_width": 1600,
+      "original_height": 900
+    },
+    { "position": 2, "title": "No original image", "link": "https://source.example.test/no-original" }
+  ]
+}

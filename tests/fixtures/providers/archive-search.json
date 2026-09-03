@@ -1,0 +1,14 @@
+{
+  "response": {
+    "numFound": 1,
+    "start": 0,
+    "docs": [
+      {
+        "identifier": "speaker-ad-archive",
+        "title": "Historic speaker advertisement",
+        "creator": "Example Radio Company",
+        "description": "Printed advertising artwork"
+      }
+    ]
+  }
+}

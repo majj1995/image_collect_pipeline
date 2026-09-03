@@ -1,0 +1,137 @@
+{
+  "status": 200,
+  "responseCode": 1,
+  "response": {
+    "rowCount": 3,
+    "message": "Execution took 18 ms",
+    "start": 0,
+    "rows": [
+      {
+        "id": "edanmdm-chndm_1952-76-2",
+        "title": "Portable Speaker Advertisement",
+        "unitCode": "CHNDM",
+        "linkedId": "0",
+        "type": "edanmdm",
+        "url": "edanmdm:chndm_1952-76-2",
+        "content": {
+          "descriptiveNonRepeating": {
+            "record_ID": "chndm_1952-76-2",
+            "online_media": {
+              "mediaCount": 2,
+              "media": [
+                {
+                  "thumbnail": "https://ids.si.example.test/ids/deliveryService?id=CHNDM-000001&token=fixture-secret",
+                  "idsId": "CHNDM-000001",
+                  "usage": { "access": "CC0" },
+                  "guid": "http://n2t.net/ark:/65665/vc9fixture",
+                  "type": "Images",
+                  "content": "https://ids.si.example.test/ids/deliveryService?id=CHNDM-000001&api_key=fixture-secret",
+                  "resources": [
+                    {
+                      "label": "Animated GIF",
+                      "url": "https://ids.si.example.test/ids/download?id=CHNDM-000001.gif",
+                      "width": 200000,
+                      "height": 100000,
+                      "mime_type": "image/gif"
+                    },
+                    {
+                      "label": "High-resolution TIFF",
+                      "url": "https://ids.si.example.test/ids/download?id=CHNDM-000001.tif",
+                      "width": 6304,
+                      "height": 4503,
+                      "mime_type": "image/tiff"
+                    },
+                    {
+                      "label": "High-resolution JPEG",
+                      "url": "https://ids.si.example.test/ids/download?id=CHNDM-000001.jpg&api_key=fixture-secret",
+                      "width": 6304,
+                      "height": 4503,
+                      "dimensions": "6304x4503",
+                      "mime_type": "image/jpeg"
+                    },
+                    {
+                      "label": "Screen Image",
+                      "url": "https://ids.si.example.test/ids/download?id=CHNDM-000001_screen",
+                      "width": 1600,
+                      "height": 1143,
+                      "mime_type": "image/jpeg"
+                    }
+                  ]
+                },
+                {
+                  "thumbnail": "https://ids.si.example.test/ids/deliveryService?id=CHNDM-000001-3d",
+                  "idsId": "CHNDM-000001-3d",
+                  "usage": { "access": "CC0" },
+                  "guid": "http://n2t.net/ark:/65665/vc9fixture3d",
+                  "type": "3D Models",
+                  "content": "https://3d.si.example.test/object/CHNDM-000001"
+                }
+              ]
+            },
+            "unit_code": "CHNDM",
+            "title_sort": "PORTABLE SPEAKER ADVERTISEMENT",
+            "record_link": "https://collection.cooperhewitt.org/objects/1952-76-2/",
+            "title": { "label": "Title", "content": "Portable Speaker Advertisement" },
+            "data_source": "Cooper Hewitt, Smithsonian Design Museum"
+          },
+          "freetext": {
+            "name": [{ "label": "Designer", "content": "Example Design Studio" }],
+            "date": [{ "label": "Date", "content": "1952" }]
+          }
+        }
+      },
+      {
+        "id": "edanmdm-nmah_529193",
+        "title": "Speaker Packaging",
+        "unitCode": "NMAH",
+        "linkedId": "0",
+        "type": "edanmdm",
+        "url": "edanmdm:nmah_529193",
+        "content": {
+          "descriptiveNonRepeating": {
+            "record_ID": "nmah_529193",
+            "online_media": {
+              "mediaCount": 1,
+              "media": [
+                {
+                  "thumbnail": "https://ids.si.example.test/ids/deliveryService?id=NMAH-000002&max=150",
+                  "idsId": "NMAH-000002",
+                  "usage": { "access": "Not determined" },
+                  "guid": "http://n2t.net/ark:/65665/bq9fixture",
+                  "type": "Images",
+                  "content": "https://ids.si.example.test/ids/deliveryService?id=NMAH-000002&api_key=fixture-secret"
+                }
+              ]
+            },
+            "unit_code": "NMAH",
+            "title_sort": "SPEAKER PACKAGING",
+            "record_link": "https://americanhistory.si.edu/collections/object/nmah_529193",
+            "title": { "label": "Title", "content": "Speaker Packaging" },
+            "data_source": "National Museum of American History"
+          },
+          "freetext": {}
+        }
+      },
+      {
+        "id": "edanmdm-npg_invalid",
+        "title": "Metadata-only Smithsonian record",
+        "unitCode": "NPG",
+        "linkedId": "0",
+        "type": "edanmdm",
+        "url": "edanmdm:npg_invalid",
+        "content": {
+          "descriptiveNonRepeating": {
+            "record_ID": "npg_invalid",
+            "online_media": { "mediaCount": 0, "media": [] },
+            "unit_code": "NPG",
+            "title_sort": "METADATA ONLY",
+            "record_link": "https://npg.si.edu/object/npg_invalid",
+            "title": { "label": "Title", "content": "Metadata-only Smithsonian record" },
+            "data_source": "National Portrait Gallery"
+          },
+          "freetext": {}
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "ads": [
+      {
+        "ad": {
+          "id": 1923845247192304,
+          "first_shown_date": "20260801",
+          "last_shown_date": "20260830",
+          "image_urls": [
+            "https://images.example.test/tiktok-speaker-ad.jpg?x-expires=1788134400&x-signature=fixture-resource-signature"
+          ]
+        },
+        "advertiser": {
+          "business_id": 1755645247067185,
+          "business_name": "Acme Audio",
+          "paid_by": "Acme Group"
+        }
+      }
+    ],
+    "has_more": false,
+    "search_id": "fixture-search-cursor"
+  },
+  "error": {
+    "code": "ok",
+    "http_status_code": 200,
+    "message": ""
+  }
+}

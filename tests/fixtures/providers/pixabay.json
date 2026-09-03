@@ -1,0 +1,34 @@
+{
+  "total": 2,
+  "totalHits": 2,
+  "hits": [
+    {
+      "id": 201,
+      "pageURL": "https://pixabay.com/illustrations/speaker-advertisement-201/",
+      "type": "illustration",
+      "tags": "speaker, sale, banner",
+      "previewURL": "https://cdn.pixabay.com/photo/2026/01/01/speaker-preview.jpg?key=fixture-secret",
+      "previewWidth": 150,
+      "previewHeight": 100,
+      "webformatURL": "https://pixabay.com/get/speaker-web.jpg",
+      "webformatWidth": 640,
+      "webformatHeight": 426,
+      "largeImageURL": "https://pixabay.com/get/speaker-large.jpg?api_key=fixture-secret&size=large",
+      "imageWidth": 3600,
+      "imageHeight": 2400,
+      "user": "pixel_shop"
+    },
+    {
+      "id": 202,
+      "pageURL": "https://pixabay.com/vectors/audio-promotion-202/",
+      "type": "vector/svg",
+      "tags": "audio, promotion",
+      "previewURL": "https://cdn.pixabay.com/photo/2026/01/02/audio-preview.jpg",
+      "webformatURL": "https://pixabay.com/get/audio-web.jpg",
+      "webformatWidth": 1280,
+      "webformatHeight": 720,
+      "largeImageURL": "javascript:alert(1)",
+      "user": "vector_store"
+    }
+  ]
+}

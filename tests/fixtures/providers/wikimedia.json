@@ -1,0 +1,86 @@
+{
+  "batchcomplete": true,
+  "continue": {
+    "gsroffset": 2,
+    "continue": "gsroffset||"
+  },
+  "query": {
+    "pages": [
+      {
+        "pageid": 1001,
+        "ns": 6,
+        "title": "File:Speaker campaign.jpg",
+        "index": 1,
+        "imageinfo": [
+          {
+            "timestamp": "2026-08-01T00:00:00Z",
+            "user": "ExampleUploader",
+            "url": "https://upload.wikimedia.example.test/speaker-campaign.jpg?token=fixture-secret",
+            "descriptionurl": "https://commons.wikimedia.org/wiki/File:Speaker_campaign.jpg",
+            "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=1001",
+            "thumburl": "https://upload.wikimedia.example.test/thumb/speaker-campaign-1024px.jpg?signature=fixture-secret",
+            "thumbmime": "image/jpeg",
+            "thumbwidth": 1024,
+            "thumbheight": 683,
+            "size": 1824000,
+            "width": 3000,
+            "height": 2000,
+            "mime": "image/jpeg",
+            "mediatype": "BITMAP",
+            "extmetadata": {
+              "Artist": { "value": "Example Design Studio", "source": "commons-desc-page" },
+              "LicenseShortName": { "value": "CC BY-SA 4.0", "source": "commons-templates" },
+              "LicenseUrl": { "value": "https://creativecommons.org/licenses/by-sa/4.0/", "source": "commons-templates" },
+              "ImageDescription": { "value": "Speaker campaign artwork", "source": "commons-desc-page" }
+            }
+          }
+        ]
+      },
+      {
+        "pageid": 1002,
+        "ns": 6,
+        "title": "File:Vintage speaker advertisement.tif",
+        "index": 2,
+        "imageinfo": [
+          {
+            "url": "https://upload.wikimedia.example.test/vintage-speaker-advertisement.tif",
+            "descriptionurl": "https://commons.wikimedia.org/wiki/File:Vintage_speaker_advertisement.tif",
+            "thumburl": "https://upload.wikimedia.example.test/thumb/vintage-speaker-advertisement-1024px.jpg?token=thumb-secret",
+            "thumbmime": "image/jpeg",
+            "thumbwidth": 1024,
+            "thumbheight": 768,
+            "size": 184000000,
+            "width": 8000,
+            "height": 6000,
+            "mime": "image/tiff",
+            "mediatype": "BITMAP",
+            "extmetadata": {
+              "ImageDescription": { "value": "Vintage speaker advertisement", "source": "commons-desc-page" }
+            }
+          }
+        ]
+      },
+      {
+        "pageid": 1003,
+        "ns": 6,
+        "title": "File:Speaker logo.svg",
+        "index": 3,
+        "imageinfo": [
+          {
+            "url": "https://upload.wikimedia.example.test/speaker-logo.svg",
+            "descriptionurl": "https://commons.wikimedia.org/wiki/File:Speaker_logo.svg",
+            "thumburl": "https://upload.wikimedia.example.test/thumb/speaker-logo.png",
+            "thumbwidth": 1024,
+            "thumbheight": 1024,
+            "size": 3200,
+            "width": 1000,
+            "height": 1000,
+            "mime": "image/svg+xml",
+            "mediatype": "DRAWING",
+            "extmetadata": {}
+          }
+        ]
+      }
+    ]
+  }
+}

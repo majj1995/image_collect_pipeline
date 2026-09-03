@@ -1,0 +1,39 @@
+{
+  "count": 2,
+  "page": 1,
+  "page_count": 2,
+  "page_size": 100,
+  "skip": 0,
+  "products": [
+    {
+      "code": "3017624010701",
+      "product_name": "Example Wireless Speaker Gift Box",
+      "brands": "Example Audio",
+      "image_url": "https://images.openfoodfacts.example.test/images/products/301/762/401/0701/1.jpg",
+      "image_small_url": "https://images.openfoodfacts.example.test/images/products/301/762/401/0701/1.200.jpg",
+      "image_front_url": "https://images.openfoodfacts.example.test/images/products/301/762/401/0701/front_en.4.full.jpg?token=fixture-secret",
+      "image_front_small_url": "https://images.openfoodfacts.example.test/images/products/301/762/401/0701/front_en.4.200.jpg?signature=fixture-secret",
+      "image_front_width": "850",
+      "image_front_height": "1200",
+      "selected_images": {
+        "front": {
+          "display": {
+            "en": "https://images.openfoodfacts.example.test/images/products/301/762/401/0701/front_en.4.400.jpg"
+          },
+          "small": {
+            "en": "https://images.openfoodfacts.example.test/images/products/301/762/401/0701/front_en.4.200.jpg"
+          }
+        }
+      },
+      "url": "https://world.openfoodfacts.org/product/3017624010701/example-wireless-speaker-gift-box"
+    },
+    {
+      "code": "0000000000000",
+      "product_name": "Record without a product image",
+      "brands": null,
+      "image_url": null,
+      "image_front_url": null,
+      "selected_images": {}
+    }
+  ]
+}

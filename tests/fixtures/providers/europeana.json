@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "itemsCount": 2,
+  "totalResults": 2,
+  "items": [
+    {
+      "id": "/2021655/advertising_speaker_101",
+      "title": ["Portable speaker advertising poster"],
+      "dcCreator": ["Studio Europa"],
+      "edmPreview": ["https://api.europeana.eu/thumbnail/v3/400/fixture-speaker.jpg?api_key=fixture-secret&size=w400"],
+      "edmIsShownBy": ["https://media.example.test/europeana-speaker.jpg?api_key=fixture-secret&size=full"],
+      "edmIsShownAt": ["https://www.europeana.eu/item/2021655/advertising_speaker_101"],
+      "dataProvider": ["Museum of Advertising"],
+      "provider": ["Europeana Foundation"],
+      "rights": ["http://creativecommons.org/licenses/by/4.0/"]
+    },
+    {
+      "id": "/9200579/fallback_speaker_102",
+      "title": ["Speaker catalogue preview"],
+      "dcCreator": ["Example Design Archive"],
+      "edmPreview": ["https://api.europeana.eu/thumbnail/v3/400/fallback-speaker.jpg"],
+      "edmIsShownBy": ["https://media.example.test/catalogue/fallback-speaker.tif"],
+      "guid": "https://www.europeana.eu/item/9200579/fallback_speaker_102",
+      "dataProvider": ["Example Design Archive"],
+      "provider": ["Europeana Foundation"]
+    }
+  ]
+}

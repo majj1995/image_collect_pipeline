@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "identifier": "speaker-ad-archive",
+    "licenseurl": "https://creativecommons.org/publicdomain/mark/1.0/"
+  },
+  "files": [
+    { "name": "metadata.xml", "source": "original", "format": "Metadata" },
+    { "name": "ads/speaker master.jp2", "source": "original", "format": "JPEG 2000" },
+    { "name": "ads/speaker hero.jpg", "source": "original", "format": "JPEG" },
+    { "name": "speaker_thumb.jpg", "source": "derivative", "format": "JPEG Thumb" }
+  ]
+}

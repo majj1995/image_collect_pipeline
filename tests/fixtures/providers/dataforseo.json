@@ -1,0 +1,35 @@
+{
+  "tasks": [
+    {
+      "status_code": 20000,
+      "result": [
+        {
+          "type": "images",
+          "items": [
+            {
+              "type": "images_search",
+              "rank_absolute": 1,
+              "title": "DataForSEO speaker poster",
+              "subtitle": "Commercial speaker product advertising",
+              "alt": "Speaker poster in a studio",
+              "url": "https://hosting.example.test/dataforseo-speaker-page",
+              "source_url": "https://images.example.test/dataforseo-speaker.jpg",
+              "encoded_url": "https://images.example.test/dataforseo-speaker-thumb.jpg",
+              "width": "1280",
+              "height": "720"
+            },
+            {
+              "type": "related_search",
+              "rank_absolute": 2,
+              "title": "Non-image sibling that must be ignored",
+              "url": "https://hosting.example.test/related-search",
+              "source_url": "https://images.example.test/related-search.jpg",
+              "encoded_url": "https://images.example.test/related-search-thumb.jpg"
+            },
+            { "type": "images_search", "rank_absolute": 3, "title": "No original image", "url": "https://hosting.example.test/no-original", "encoded_url": "https://images.example.test/no-original-thumb.jpg" }
+          ]
+        }
+      ]
+    }
+  ]
+}

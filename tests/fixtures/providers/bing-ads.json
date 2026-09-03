@@ -1,0 +1,13 @@
+{
+  "@odata.count": 1,
+  "value": [
+    {
+      "AdId": 71468541217674,
+      "AdvertiserName": "Acme Audio",
+      "Title": "Portable speaker summer sale",
+      "Description": "Save on the hero portable speaker.",
+      "DestinationUrl": "https://shop.example.test/products/speaker",
+      "AssetJson": "[{\"AssetType\":\"Image\",\"AssetUrl\":\"https://images.example.test/bing-speaker-ad.jpg\"},{\"AssetType\":\"Video\",\"AssetUrl\":\"https://video.example.test/bing-speaker-ad.mp4\"}]"
+    }
+  ]
+}
