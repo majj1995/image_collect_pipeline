@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream, existsSync, readFileSync } from "node:fs";
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
-import { basename, dirname, join, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { ZipArchive } from "archiver";
 import { Unzip, UnzipInflate } from "fflate";
 import sharp from "sharp";
@@ -33,7 +33,32 @@ interface SnapshotItem { assetId: string; normalizedSha256: string; sourceSha256
 interface Snapshot { jobId: string; datasetSlug: string; taskType: TaskType; exportMode: string; contractualRightsDeclarations: Record<string, boolean>; items: SnapshotItem[]; acquisition: { queryRuns: number; providerCounts: Record<string, number> }; }
 interface StagedFile { path: string; sha256: string; }
 export interface Preflight { selected: number; uniqueAssets: number; ready: number; blockers: Record<string, string[]>; warnings: Record<string, string[]>; }
-export interface ExportServiceOptions { onGenerationStart?: () => void; testBeforeCreateTransaction?: () => void; }
+export interface ExportServiceOptions {
+  onGenerationStart?: () => void;
+  testBeforeCreateTransaction?: () => void;
+  pathOperations?: PathOperations;
+  sha256File?: (path: string) => Promise<string>;
+}
+
+export interface PathOperations {
+  resolve(...paths: string[]): string;
+  basename(path: string): string;
+  relative(from: string, to: string): string;
+}
+
+const defaultPathOperations: PathOperations = { resolve, basename, relative };
+
+export function isExpectedExportDownloadPath(
+  dataDir: string,
+  zipPath: string,
+  exportId: string,
+  pathOperations: PathOperations = defaultPathOperations
+): boolean {
+  const expectedName = `${exportId}.zip`;
+  if (pathOperations.basename(expectedName) !== expectedName) return false;
+  const exportRoot = pathOperations.resolve(dataDir, "exports");
+  return pathOperations.relative(exportRoot, pathOperations.resolve(zipPath)) === expectedName;
+}
 
 export class ExportService {
   private readonly running = new Set<Promise<void>>();
@@ -93,9 +118,10 @@ export class ExportService {
   }
   public async download(id: string): Promise<{ path: string; name: string } | undefined> {
     const record = this.exports.get(id); if (!record || record.status !== "ready" || !record.zipPath || !record.zipSha256) return undefined;
-    const root = resolve(this.dataDir, "exports"); const path = resolve(record.zipPath);
-    if (!path.startsWith(`${root}/`) || basename(path) !== `${id}.zip`) return undefined;
-    try { if (await sha256File(path) !== record.zipSha256) return undefined; return { path, name: `${id}.zip` }; } catch { return undefined; }
+    const pathOperations = this.options.pathOperations ?? defaultPathOperations;
+    const path = pathOperations.resolve(record.zipPath);
+    if (!isExpectedExportDownloadPath(this.dataDir, path, id, pathOperations)) return undefined;
+    try { if (await (this.options.sha256File ?? sha256File)(path) !== record.zipSha256) return undefined; return { path, name: `${id}.zip` }; } catch { return undefined; }
   }
   public get(id: string): ExportRecord | undefined { return this.exports.get(id); }
   private assetPath(hash: string): string { return join(this.dataDir, "cache", "assets", hash.slice(0, 2), hash); }

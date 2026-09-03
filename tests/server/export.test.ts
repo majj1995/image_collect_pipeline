@@ -101,8 +101,12 @@ describe("dataset export", () => {
     const created = await app.inject({ method: "POST", url: "/api/jobs/job-1/exports", payload: {} });
 
     await waitAndReadZip(app, created.json().id);
+    const downloaded = await app.inject({ method: "GET", url: `/api/exports/${created.json().id}/download` });
 
     expect(downloadPayloadWasReadable).toBe(true);
+    expect(downloaded.statusCode).toBe(200);
+    expect(downloaded.headers["content-type"]).toBe("application/zip");
+    expect(downloaded.headers["content-disposition"]).toBe(`attachment; filename="${created.json().id}.zip"`);
   });
 
   it("fails closed when unsanitized label metadata contains a generic credential or local path", async () => {
