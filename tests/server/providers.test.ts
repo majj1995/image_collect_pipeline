@@ -288,7 +288,7 @@ describe("provider credential configuration", () => {
     expect(useEnvironmentProxy({})).toBe(false);
   });
 
-  it("requires complete loopback settings and clears NO_PROXY before constructing the proxy fetch", async () => {
+  it("requires complete loopback settings by default and clears NO_PROXY before constructing the proxy fetch", async () => {
     expect(() => prepareEnvironmentProxy({ NODE_USE_ENV_PROXY: "1" })).toThrow(/HTTP_PROXY.*HTTPS_PROXY/u);
     expect(() => prepareEnvironmentProxy({
       NODE_USE_ENV_PROXY: "1",
@@ -318,6 +318,55 @@ describe("provider credential configuration", () => {
     expect(env.http_proxy).toBe(env.HTTP_PROXY);
     expect(env.https_proxy).toBe(env.HTTPS_PROXY);
     await prepared?.close();
+  });
+
+  it("allows a remote corporate proxy only with an explicit opt-in", async () => {
+    for (const optIn of [undefined, "0", "true"]) {
+      expect(() => prepareEnvironmentProxy({
+        NODE_USE_ENV_PROXY: "1",
+        ALLOW_REMOTE_ENV_PROXY: optIn,
+        HTTP_PROXY: "http://proxy.example.test:8080",
+        HTTPS_PROXY: "http://proxy.example.test:8080"
+      })).toThrow(/本机代理/u);
+    }
+
+    const env: NodeJS.ProcessEnv = {
+      NODE_USE_ENV_PROXY: "1",
+      ALLOW_REMOTE_ENV_PROXY: " 1 ",
+      HTTP_PROXY: "http://proxy.example.test:8080",
+      HTTPS_PROXY: "http://proxy.example.test:8080",
+      NO_PROXY: "*"
+    };
+
+    const prepared = prepareEnvironmentProxy(env);
+
+    expect(prepared?.fetch).toEqual(expect.any(Function));
+    expect(prepared?.fetch).not.toBe(globalThis.fetch);
+    expect(env.HTTP_PROXY).toBe("http://proxy.example.test:8080/");
+    expect(env.HTTPS_PROXY).toBe("http://proxy.example.test:8080/");
+    expect(env.NO_PROXY).toBe("");
+    expect(env.no_proxy).toBe("");
+    await prepared?.close();
+  });
+
+  it("rejects malformed remote proxy credentials without echoing the proxy value", () => {
+    const proxy = "http://malformed%zz@proxy.example.test:8080";
+    let caught: unknown;
+
+    try {
+      prepareEnvironmentProxy({
+        NODE_USE_ENV_PROXY: "1",
+        ALLOW_REMOTE_ENV_PROXY: "1",
+        HTTP_PROXY: proxy,
+        HTTPS_PROXY: proxy
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(Error);
+    expect(String(caught)).toMatch(/HTTP_PROXY.*HTTPS_PROXY/u);
+    expect(String(caught)).not.toContain(proxy);
   });
 
   it("binds both HTTP and HTTPS requests to the newly validated proxy dispatcher", async () => {

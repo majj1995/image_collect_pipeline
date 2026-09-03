@@ -81,13 +81,15 @@ export interface PreparedEnvironmentProxy {
   close(): Promise<void>;
 }
 
-function localProxyUrl(value: string | undefined): string | null {
+function trustedProxyUrl(value: string | undefined, allowRemote: boolean): string | null {
   if (!value?.trim()) return null;
   try {
     const url = new URL(value.trim());
     const hostname = url.hostname.replace(/^\[|\]$/gu, "").toLowerCase();
     const loopback = hostname === "localhost" || hostname === "::1" || /^127(?:\.\d{1,3}){3}$/u.test(hostname);
-    if (!loopback || (url.protocol !== "http:" && url.protocol !== "https:") || url.pathname !== "/" || url.search || url.hash) return null;
+    if ((!loopback && !allowRemote) || (url.protocol !== "http:" && url.protocol !== "https:") || url.pathname !== "/" || url.search || url.hash) return null;
+    decodeURIComponent(url.username);
+    decodeURIComponent(url.password);
     return url.toString();
   } catch {
     return null;
@@ -96,17 +98,20 @@ function localProxyUrl(value: string | undefined): string | null {
 
 /**
  * Constructs an isolated proxy dispatcher only when both protocols are bound
- * to a trusted local proxy. NO_PROXY is intentionally cleared so a provider
- * hostname can never fall back to an unpinned direct fetch.
+ * to a trusted local proxy, or to an explicitly trusted remote corporate
+ * proxy. NO_PROXY is intentionally cleared so a provider hostname can never
+ * fall back to an unpinned direct fetch.
  */
 export function prepareEnvironmentProxy(env: NodeJS.ProcessEnv = process.env): PreparedEnvironmentProxy | undefined {
   if (!useEnvironmentProxy(env)) return undefined;
+  const allowRemote = env.ALLOW_REMOTE_ENV_PROXY?.trim() === "1";
   // Node's environment proxy uses lowercase values first, so validation must
   // use the same precedence before normalizing both spellings.
-  const httpProxy = localProxyUrl(env.http_proxy ?? env.HTTP_PROXY);
-  const httpsProxy = localProxyUrl(env.https_proxy ?? env.HTTPS_PROXY);
+  const httpProxy = trustedProxyUrl(env.http_proxy ?? env.HTTP_PROXY, allowRemote);
+  const httpsProxy = trustedProxyUrl(env.https_proxy ?? env.HTTPS_PROXY, allowRemote);
   if (!httpProxy || !httpsProxy) {
-    throw new Error("NODE_USE_ENV_PROXY=1 时必须同时配置有效的本机代理 HTTP_PROXY 和 HTTPS_PROXY。");
+    const scope = allowRemote ? "代理" : "本机代理";
+    throw new Error(`NODE_USE_ENV_PROXY=1 时必须同时配置有效的${scope} HTTP_PROXY 和 HTTPS_PROXY。`);
   }
   env.HTTP_PROXY = httpProxy;
   env.HTTPS_PROXY = httpsProxy;

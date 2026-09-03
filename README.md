@@ -29,6 +29,19 @@ npm start
 
 本应用按本地单进程、单实例运行设计。不要让多个进程同时使用同一个 `DATA_DIR`；退出旧进程后再启动新实例，也不要干预正在生成的临时导出目录。
 
+### 企业级远程代理
+
+公司内网服务器必须经过统一出口代理时，先确认代理能够访问外部 API，例如 `curl -x http://proxy.example.com:8080 -I https://api.openverse.org` 返回成功状态；然后仅在本机 `.env` 中显式配置：
+
+```dotenv
+NODE_USE_ENV_PROXY=1
+ALLOW_REMOTE_ENV_PROXY=1
+HTTP_PROXY=http://proxy.example.com:8080
+HTTPS_PROXY=http://proxy.example.com:8080
+```
+
+请把示例域名和端口替换为公司实际提供的值，不要提交 `.env`。未设置 `ALLOW_REMOTE_ENV_PROXY=1` 时，程序仍只接受 `127.0.0.1`、`localhost` 或 `::1` 上的本地代理；该开关只应用于你明确信任的企业代理。修改代理配置后需要重启应用。
+
 ## 搜索提供方
 
 当前生产注册表共有 23 个来源。通用图片和公共馆藏来源可扩大视觉风格、商品外观或包装图的召回；Open Food Facts 更偏商品包装；Bing、Snap 和 TikTok 是广告资料库。搜索时仍需用“电商广告、促销海报、商品展示”等风格词约束结果，并在工作台人工筛选。
@@ -88,7 +101,7 @@ Brave Images 和 DataForSEO 不属于持续免费的默认渠道，因此不进�
 
 默认数据位于项目的 `.data/`，可通过 `DATA_DIR` 改到其他本地目录。目录包含 SQLite 数据库、原图缓存、缩略图和导出文件，请自行备份并按素材合规要求清理。
 
-下载器只接受 HTTP/HTTPS 的静态 JPEG、PNG 和 WebP，并阻断本机、私网、保留地址、云元数据地址及不安全重定向。硬限制为 20 秒、25 MB、100 MP、任一边至少 128 px；设置页只能把这些限制收紧，不能放宽。HTML、SVG、动画、多页图和伪装文件会被拒绝。直连模式会把连接固定到已校验的公网 DNS 地址；显式设置 `NODE_USE_ENV_PROXY=1` 时，程序要求 `HTTP_PROXY` 和 `HTTPS_PROXY` 都指向本机回环地址，并主动忽略 `NO_PROXY`，避免外部下载退回未固定 IP 的直连。代理模式仍会在本机预检每一跳 URL、DNS、公网地址和重定向，但代理会再次解析目标域名，因此只应使用可信的本地代理。
+下载器只接受 HTTP/HTTPS 的静态 JPEG、PNG 和 WebP，并阻断本机、私网、保留地址、云元数据地址及不安全重定向。硬限制为 20 秒、25 MB、100 MP、任一边至少 128 px；设置页只能把这些限制收紧，不能放宽。HTML、SVG、动画、多页图和伪装文件会被拒绝。直连模式会把连接固定到已校验的公网 DNS 地址；显式设置 `NODE_USE_ENV_PROXY=1` 时，程序要求同时提供有效的 `HTTP_PROXY` 和 `HTTPS_PROXY`，默认只接受本机回环地址。只有再设置 `ALLOW_REMOTE_ENV_PROXY=1` 才会接受远程企业代理。代理模式会主动忽略 `NO_PROXY`，避免外部下载退回未固定 IP 的直连；程序仍会在本机预检每一跳 URL、DNS、公网地址和重定向，但代理会再次解析目标域名，因此远程模式只应使用公司明确提供并由你信任的代理。
 
 `ALLOW_TEST_FIXTURES` 只供自动测试使用。应用仅在 `NODE_ENV=test` 且 `ALLOW_TEST_FIXTURES=1` 时启用固定的本地测试图片；开发或生产环境中设置该变量会直接拒绝启动。
 
@@ -117,4 +130,4 @@ npm run test:e2e
 
 端到端测试会启用固定的测试提供方和本地图片，不访问真实搜索平台，也不会读取或输出真实 API 密钥。
 
-如需对最多 13 个免 Key/可选 Key 来源做小流量真实联网抽查，可运行 `npm run smoke:free`；未配置合规 `WIKIMEDIA_USER_AGENT` 时会自动跳过 Wikimedia，共抽查 12 个来源。该命令会实际调用外部搜索 API，并把首批可用图片经过与正式下载相同的安全与格式校验；它可能消耗匿名限额或遇到平台临时限流。使用本地代理时，请先按 `.env.example` 设置 `NODE_USE_ENV_PROXY`、`HTTP_PROXY` 和 `HTTPS_PROXY`。
+如需对最多 13 个免 Key/可选 Key 来源做小流量真实联网抽查，可运行 `npm run smoke:free`；未配置合规 `WIKIMEDIA_USER_AGENT` 时会自动跳过 Wikimedia，共抽查 12 个来源。该命令会实际调用外部搜索 API，并把首批可用图片经过与正式下载相同的安全与格式校验；它可能消耗匿名限额或遇到平台临时限流。使用代理时，请先按 `.env.example` 设置 `NODE_USE_ENV_PROXY`、`HTTP_PROXY` 和 `HTTPS_PROXY`；远程企业代理还需设置 `ALLOW_REMOTE_ENV_PROXY=1`。
