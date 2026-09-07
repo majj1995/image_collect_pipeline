@@ -20,6 +20,20 @@ function waitForWorker(worker: Worker, expected: string): Promise<void> {
 }
 
 describe("dataset export", () => {
+  it("persists search platforms in the immutable snapshot and exported dataset metadata", async () => {
+    const app = await createExportReadyApp(); apps.push(app);
+    const database = (app as typeof app & { database: import("../../src/server/database.js").AppDatabase }).database;
+    const searchPlatforms = ["jd", "xiaohongshu"];
+    database.prepare("UPDATE jobs SET settings_json = ? WHERE id = 'job-1'").run(JSON.stringify({ searchPlatforms: ["xiaohongshu", "jd"] }));
+    await app.inject({ method: "POST", url: "/api/jobs/job-1/reviews", payload: { candidateIds: ["candidate-1"], action: "select", labelIds: ["L1"], primaryLabelId: "L1", rightsAcknowledged: true } });
+
+    const created = await app.inject({ method: "POST", url: "/api/jobs/job-1/exports", payload: {} });
+    expect(created.statusCode).toBe(202);
+    const snapshot = JSON.parse((database.prepare("SELECT snapshot_json FROM exports WHERE id = ?").get(created.json().id) as { snapshot_json: string }).snapshot_json);
+    expect(snapshot.searchPlatforms).toEqual(searchPlatforms);
+    const archive = await waitAndReadZip(app, created.json().id);
+    expect(JSON.parse(archive.text("dataset.json")).searchPlatforms).toEqual(searchPlatforms);
+  });
   it("exports one manifest row per selected image without paths or secrets", async () => {
     const app = await createExportReadyApp(); apps.push(app);
     await app.inject({ method: "POST", url: "/api/jobs/job-1/reviews", payload: { candidateIds: ["candidate-1"], action: "select", labelIds: ["L1"], primaryLabelId: "L1", rightsAcknowledged: true } });

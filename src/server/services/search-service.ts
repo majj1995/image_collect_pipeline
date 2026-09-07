@@ -1,7 +1,12 @@
 import type { JobDetail, JobsRepository } from "../repositories/jobs.js";
 import { SearchRepository, type CandidateMaterializationTarget, type QueryRun, type QueryRunDraft } from "../repositories/search.js";
 import type { ProviderRegistry } from "../providers/registry.js";
-import { defaultLocalSettings, type LocalSettings, type ProviderId } from "../../shared/contracts.js";
+import {
+  defaultLocalSettings,
+  type LocalSettings,
+  type ProviderId,
+  type SearchPlatform
+} from "../../shared/contracts.js";
 import {
   planQueries,
   planSearchProfileQueries,
@@ -83,6 +88,18 @@ function requestAllocationKey(labelId: string, providerId: ProviderId): string {
   return `${labelId}\u0000${providerId}`;
 }
 
+function interleave<Value>(...groups: Value[][]): Value[] {
+  const result: Value[] = [];
+  const rounds = Math.max(0, ...groups.map((group) => group.length));
+  for (let index = 0; index < rounds; index += 1) {
+    for (const group of groups) {
+      const value = group[index];
+      if (value !== undefined) result.push(value);
+    }
+  }
+  return result;
+}
+
 export class SearchService {
   private readonly running = new Set<Promise<void>>();
   private readonly activeJobs = new Set<string>();
@@ -145,6 +162,7 @@ export class SearchService {
         providerIds,
         retryFailedProviderIds,
         plannedLabels,
+        job.searchPlatforms ?? [],
         providerById,
         this.searches.listRuns(jobId)
       );
@@ -265,10 +283,39 @@ export class SearchService {
     return drafts;
   }
 
+  private plannedPlatformPageOneDrafts(
+    plannedLabels: PlannedLabel[],
+    provider: ImageSearchProvider,
+    searchPlatforms: SearchPlatform[]
+  ): QueryRunDraft[] {
+    if (!provider.buildPlatformQuery || searchPlatforms.length === 0
+      || providerCatalogMetadata(provider).sourceCategory !== "general") return [];
+    const drafts: QueryRunDraft[] = [];
+    const language = this.providers.queryLanguage(provider.id);
+    for (const platform of searchPlatforms) {
+      for (const entry of plannedLabels) {
+        if (!entry.eligibleProviderIds.has(provider.id)) continue;
+        const primaryVariant = entry.variants[language][0];
+        if (!primaryVariant) continue;
+        const query = provider.buildPlatformQuery(primaryVariant.query, platform).trim();
+        if (!query) continue;
+        drafts.push({
+          labelId: entry.labelId,
+          providerId: provider.id,
+          variantName: `platform_${platform}`,
+          query,
+          page: 1
+        });
+      }
+    }
+    return drafts;
+  }
+
   private planFreshRunDraftsForProvider(
     plannedLabels: PlannedLabel[],
     providerId: ProviderId,
     provider: ImageSearchProvider,
+    searchPlatforms: SearchPlatform[],
     existingRuns: QueryRun[],
     existingKeys: ReadonlySet<string>
   ): QueryRunDraft[] {
@@ -280,8 +327,10 @@ export class SearchService {
       runsByCombination.set(key, runs);
     }
     const base = this.plannedPageOneDrafts(plannedLabels, providerId, false);
+    const platform = this.plannedPlatformPageOneDrafts(plannedLabels, provider, searchPlatforms);
     const supplemental = this.plannedPageOneDrafts(plannedLabels, providerId, true);
-    const continuations = [...base, ...supplemental].flatMap((draft): QueryRunDraft[] => {
+    const primary = interleave(base, platform);
+    const continuations = [...primary, ...supplemental].flatMap((draft): QueryRunDraft[] => {
       const runs = runsByCombination.get(queryCombinationKey(draft));
       const latest = runs?.at(-1);
       if (!latest || latest.status !== "completed" || latest.hitCount === 0 || latest.requestCount === null
@@ -291,9 +340,11 @@ export class SearchService {
         || !(provider.canRequestPage?.(continuation.page, latest.requestCount) ?? true)) return [];
       return [continuation];
     });
-    if (continuations.length > 0) return continuations;
     const untriedBase = base.filter((draft) => !runsByCombination.has(queryCombinationKey(draft)));
-    if (untriedBase.length > 0) return untriedBase;
+    const untriedPlatform = platform.filter((draft) => !runsByCombination.has(queryCombinationKey(draft)));
+    const untriedPrimary = interleave(untriedBase, untriedPlatform);
+    const advancingPrimary = interleave(continuations, untriedPrimary);
+    if (advancingPrimary.length > 0) return advancingPrimary;
     return supplemental.filter((draft) => !runsByCombination.has(queryCombinationKey(draft)));
   }
 
@@ -301,6 +352,7 @@ export class SearchService {
     providerIds: ProviderId[],
     retryFailedProviderIds: ProviderId[],
     plannedLabels: PlannedLabel[],
+    searchPlatforms: SearchPlatform[],
     providerById: ReadonlyMap<ProviderId, ImageSearchProvider>,
     existingRuns: QueryRun[]
   ): ScheduledWork[] {
@@ -317,12 +369,19 @@ export class SearchService {
       const resumedContinuations = resumableRuns.filter((run) => run.page > 1);
       const ordinaryResumable = resumableRuns.filter((run) => run.page <= 1);
       const provider = providerById.get(providerId)!;
-      const fresh = this.planFreshRunDraftsForProvider(plannedLabels, providerId, provider, existingRuns, existingKeys);
-      const lowerPriority = [
-        ...resumedContinuations.map((run): ScheduledWork => ({ kind: "existing", run })),
-        ...fresh.map((draft): ScheduledWork => ({ kind: "fresh", draft })),
-        ...ordinaryResumable.map((run): ScheduledWork => ({ kind: "existing", run }))
-      ];
+      const fresh = this.planFreshRunDraftsForProvider(plannedLabels, providerId, provider, searchPlatforms, existingRuns, existingKeys);
+      const freshContinuations = fresh.filter((draft) => (draft.page ?? 1) > 1);
+      const freshPageOne = fresh.filter((draft) => (draft.page ?? 1) <= 1);
+      const continuationWork = interleave<ScheduledWork>(
+        resumedContinuations.map((run) => ({ kind: "existing", run })),
+        freshContinuations.map((draft) => ({ kind: "fresh", draft }))
+      );
+      const ordinaryPageOne = ordinaryResumable.map((run): ScheduledWork => ({ kind: "existing", run }));
+      const newPageOne = freshPageOne.map((draft): ScheduledWork => ({ kind: "fresh", draft }));
+      const pageOneWork = continuationWork.length > 0
+        ? interleave(ordinaryPageOne, newPageOne)
+        : interleave(newPageOne, ordinaryPageOne);
+      const lowerPriority = interleave(continuationWork, pageOneWork);
       const queue: ScheduledWork[] = [];
       for (let rank = 0; rank < Math.max(explicitRetries.length, lowerPriority.length); rank += 1) {
         const explicit = explicitRetries[rank];

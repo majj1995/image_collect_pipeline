@@ -5,7 +5,12 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { ZipArchive } from "archiver";
 import { Unzip, UnzipInflate } from "fflate";
 import sharp from "sharp";
-import type { CandidateProvenance, TaskType } from "../../shared/contracts.js";
+import {
+  searchPlatformSelectionSchema,
+  type CandidateProvenance,
+  type SearchPlatform,
+  type TaskType
+} from "../../shared/contracts.js";
 import { containsUnsafePublicMetadata, sanitizePublicHttpUrl, sanitizePublicSource, sanitizePublicText } from "../../shared/public-url.js";
 import type { AppDatabase } from "../database.js";
 import { ExportsRepository, type ExportRecord } from "../repositories/exports.js";
@@ -30,7 +35,7 @@ const sha256File = async (path: string): Promise<string> => new Promise((resolve
 
 interface ReviewAudit { candidateId: string; rightsAcknowledged: boolean; rightsBasis: string; rightsEvidence: string | null; warningOverrides: string[]; }
 interface SnapshotItem { assetId: string; normalizedSha256: string; sourceSha256: string; width: number; height: number; mimeType: string; selectedCandidateIds: string[]; sourceCandidateIds: string[]; canonicalCandidateId: string; labelIds: string[]; primaryLabelId: string; warnings: string[]; reviewAudit: ReviewAudit[]; provenance: CandidateProvenance[]; labelConfig: Record<string, unknown>[]; }
-interface Snapshot { jobId: string; datasetSlug: string; taskType: TaskType; exportMode: string; contractualRightsDeclarations: Record<string, boolean>; items: SnapshotItem[]; acquisition: { queryRuns: number; providerCounts: Record<string, number> }; }
+interface Snapshot { jobId: string; datasetSlug: string; taskType: TaskType; exportMode: string; searchPlatforms: SearchPlatform[]; contractualRightsDeclarations: Record<string, boolean>; items: SnapshotItem[]; acquisition: { queryRuns: number; providerCounts: Record<string, number> }; }
 interface StagedFile { path: string; sha256: string; }
 export interface Preflight { selected: number; uniqueAssets: number; ready: number; blockers: Record<string, string[]>; warnings: Record<string, string[]>; }
 export interface ExportServiceOptions {
@@ -65,8 +70,18 @@ export class ExportService {
   public constructor(private readonly database: AppDatabase, private readonly exports: ExportsRepository, private readonly dataDir: string, private readonly providers: ProviderRegistry, private readonly readContractualDeclarations: () => Record<string, boolean> = () => ({}), private readonly options: ExportServiceOptions = {}) {}
   public async close(): Promise<void> { await Promise.allSettled([...this.running]); }
   public preflight(jobId: string): { preflight: Preflight; snapshot: Snapshot | null } {
-    const job = this.database.prepare("SELECT name, task_type, export_mode FROM jobs WHERE id = ?").get(jobId) as { name: string; task_type: TaskType; export_mode: "strict_compliance" | "internal_research" } | undefined;
+    const job = this.database.prepare("SELECT name, task_type, export_mode, settings_json FROM jobs WHERE id = ?").get(jobId) as { name: string; task_type: TaskType; export_mode: "strict_compliance" | "internal_research"; settings_json: string } | undefined;
     if (!job) throw new Error("JOB_NOT_FOUND");
+    let searchPlatforms: SearchPlatform[] = [];
+    try {
+      const settings: unknown = JSON.parse(job.settings_json);
+      if (settings !== null && typeof settings === "object" && !Array.isArray(settings)) {
+        const parsed = searchPlatformSelectionSchema.safeParse((settings as Record<string, unknown>).searchPlatforms);
+        if (parsed.success) searchPlatforms = parsed.data;
+      }
+    } catch {
+      searchPlatforms = [];
+    }
     const contractualDeclarations = this.readContractualDeclarations();
     const selected = this.database.prepare(`SELECT c.id, c.provider_id, c.pipeline_state, c.rights_status, c.pipeline_warnings_json, ca.asset_id, a.source_sha256, a.normalized_sha256, a.width, a.height, a.mime_type, r.label_ids_json, r.primary_label_id, r.rights_acknowledged, r.rights_basis, r.rights_evidence, r.warning_overrides_json FROM candidate_review_state r JOIN candidates c ON c.id = r.candidate_id LEFT JOIN candidate_assets ca ON ca.candidate_id = c.id LEFT JOIN assets a ON a.id = ca.asset_id WHERE r.job_id = ? AND r.review_state = 'selected' ORDER BY c.id`).all(jobId) as Array<Record<string, string | number | null>>;
     const blockers: Record<string, string[]> = {}; const warnings: Record<string, string[]> = {}; const blockedAssetIds = new Set<string>(); const group = (to: Record<string, string[]>, code: string, id: string) => { (to[code] ??= []).push(id); };
@@ -99,7 +114,7 @@ export class ExportService {
     const preflight: Preflight = { selected: selected.length, uniqueAssets: ordered.length, ready: ordered.filter((item) => !blockedAssetIds.has(item.assetId)).length, blockers, warnings };
     const providerCounts: Record<string, number> = {}; for (const item of ordered) for (const entry of item.provenance) if (entry.provider) providerCounts[entry.provider] = (providerCounts[entry.provider] ?? 0) + 1;
     const queryRuns = Number((this.database.prepare("SELECT COUNT(*) AS count FROM query_runs WHERE job_id = ?").get(jobId) as { count: number | bigint }).count);
-    return { preflight, snapshot: selected.length ? { jobId, datasetSlug: slug(job.name, "dataset"), taskType: job.task_type, exportMode: job.export_mode, contractualRightsDeclarations: contractualDeclarations, items: ordered, acquisition: { queryRuns, providerCounts } } : null };
+    return { preflight, snapshot: selected.length ? { jobId, datasetSlug: slug(job.name, "dataset"), taskType: job.task_type, exportMode: job.export_mode, searchPlatforms, contractualRightsDeclarations: contractualDeclarations, items: ordered, acquisition: { queryRuns, providerCounts } } : null };
   }
   public create(jobId: string): { record?: ExportRecord; preflight: Preflight; code?: "JOB_NOT_FOUND" | "NO_SELECTED_ITEMS" | "PREFLIGHT_BLOCKED" } {
     this.options.testBeforeCreateTransaction?.();
@@ -219,7 +234,7 @@ export class ExportService {
       const rightsStats = countBy(manifest.flatMap((row) => (row.reviewAudit as ReviewAudit[]).map((entry) => entry.rightsBasis)));
       const metadata = new Map<string, Buffer>([
         ["README.md", Buffer.from("# Local dataset export\n\nRights acknowledgements are not copyright licenses.\n")],
-        ["dataset.json", Buffer.from(`${stableJson({ applicationVersion: "1", exportId: record.id, exportMode: snapshot.exportMode, policyVersion: "1", taskType: snapshot.taskType, contractualRightsDeclarations: snapshot.contractualRightsDeclarations, total: manifest.length, sourceCount: new Set(manifest.flatMap((row) => (row.sourceCandidateIds as string[]))).size, sourceStats, licenseStats, rightsStats })}\n`)],
+        ["dataset.json", Buffer.from(`${stableJson({ applicationVersion: "1", exportId: record.id, exportMode: snapshot.exportMode, policyVersion: "1", taskType: snapshot.taskType, searchPlatforms: snapshot.searchPlatforms, contractualRightsDeclarations: snapshot.contractualRightsDeclarations, total: manifest.length, sourceCount: new Set(manifest.flatMap((row) => (row.sourceCandidateIds as string[]))).size, sourceStats, licenseStats, rightsStats })}\n`)],
         ["taxonomy.json", Buffer.from(`${stableJson(taxonomy)}\n`)],
         ["manifest.jsonl", Buffer.from(`${manifest.sort((a, b) => String(a.path).localeCompare(String(b.path))).map((row) => stableJson(row)).join("\n")}\n`)],
         ["reports/acquisition_summary.json", Buffer.from(`${stableJson({ selectedCandidates: manifest.reduce((sum, row) => sum + (row.selectedCandidateIds as string[]).length, 0), sourceCandidates: manifest.reduce((sum, row) => sum + (row.sourceCandidateIds as string[]).length, 0), uniqueAssets: manifest.length, providerCounts: snapshot.acquisition.providerCounts, queryRuns: snapshot.acquisition.queryRuns })}\n`)]

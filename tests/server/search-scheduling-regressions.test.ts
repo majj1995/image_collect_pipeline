@@ -137,6 +137,51 @@ describe("search scheduling regressions", () => {
       .toEqual({ status: "completed" });
   });
 
+  it("advances a continuation without starving untried platform and base queries", async () => {
+    const requests: ProviderSearchRequest[] = [];
+    const provider: ImageSearchProvider = {
+      id: "fake",
+      displayName: "fair platform pager",
+      configured: true,
+      maxResults: 100,
+      rightsPolicy: "open",
+      sourceCategory: "general",
+      supportsPagination: true,
+      canRequestPage: () => true,
+      buildPlatformQuery: (query, platform) => `site:${platform}.example ${query}`,
+      async search(request) {
+        requests.push({ ...request });
+        return [];
+      }
+    };
+    const app = await createTestApp({ providers: [provider], assetService: false });
+    apps.push(app);
+    const job = await createSpeakerJob(app);
+    const jobId = String(job.id);
+    const labelId = String((job.labels as Array<{ id: string }>)[0]!.id);
+    const database = (app as typeof app & { database: AppDatabase }).database;
+    const settingsRow = database.prepare("SELECT settings_json FROM jobs WHERE id = ?").get(jobId) as { settings_json: string };
+    database.prepare("UPDATE jobs SET settings_json = ? WHERE id = ?")
+      .run(JSON.stringify({ ...JSON.parse(settingsRow.settings_json), searchPlatforms: ["jd"] }), jobId);
+    database.prepare(`
+      INSERT INTO query_runs (
+        id, job_id, label_id, provider_id, variant_name, query_text, page,
+        request_count, provider_hit_count, status, created_at, completed_at
+      ) VALUES ('completed-page-one', ?, ?, 'fake', 'exact_ad', '音箱 电商海报', 1, 10, 1, 'completed', 'now', 'now')
+    `).run(jobId, labelId);
+
+    expect((await app.inject({
+      method: "POST", url: `/api/jobs/${jobId}/search`, payload: { providerIds: ["fake"] }
+    })).statusCode).toBe(202);
+    await waitForJob(app, jobId, "reviewing");
+
+    expect(requests).toEqual(expect.arrayContaining([
+      expect.objectContaining({ query: "音箱 电商海报", page: 2 }),
+      expect.objectContaining({ query: expect.stringContaining("site:jd.example"), page: 1 })
+    ]));
+    expect(requests.some((request) => request.page === 1 && !request.query.includes("site:"))).toBe(true);
+  });
+
   it("paces consecutive search starts using the provider minimum interval", async () => {
     let clock = 0;
     const starts: number[] = [];

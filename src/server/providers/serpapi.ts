@@ -1,5 +1,6 @@
 import type { ImageSearchProvider, NormalizedHit, ProviderSearchRequest } from "./types.js";
 import { cappedCount, isRecord, localeOptions, numberValue, providerEnvelopeError, requestJson, safeHttpUrl, stringValue } from "./common.js";
+import { siteScopedPlatformQuery } from "./platform-query.js";
 
 interface SerpApiOptions { apiKey?: string; fetch?: typeof globalThis.fetch; }
 
@@ -15,6 +16,7 @@ export class SerpApiProvider implements ImageSearchProvider {
   public readonly defaultSelected = false;
   public readonly maxResults = 200;
   public readonly supportsPagination = true;
+  public readonly buildPlatformQuery = siteScopedPlatformQuery;
   public readonly canRequestPage = (page: number): boolean => Number.isSafeInteger(page) && page >= 1 && page <= 100;
   public readonly configured: boolean;
   private readonly apiKey: string | undefined;

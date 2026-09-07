@@ -1,6 +1,12 @@
 import { randomUUID } from "node:crypto";
 import type { AppDatabase } from "../database.js";
-import type { CreateJobInput, Job, LabelTarget } from "../../shared/contracts.js";
+import {
+  searchPlatformSelectionSchema,
+  type CreateJobInput,
+  type Job,
+  type LabelTarget,
+  type SearchPlatform
+} from "../../shared/contracts.js";
 import type { ParsedTaxonomy, TaxonomyNode } from "../../shared/taxonomy.js";
 
 type JobStatus = Job["status"];
@@ -39,10 +45,27 @@ function toJob(row: JobRow): Job {
     name: row.name,
     taskType: row.task_type,
     exportMode: row.export_mode,
+    searchPlatforms: searchPlatformsFromSettings(row.settings_json),
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
+}
+
+function settingsRecord(settingsJson: string): Record<string, unknown> {
+  try {
+    const value: unknown = JSON.parse(settingsJson);
+    return value !== null && typeof value === "object" && !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function searchPlatformsFromSettings(settingsJson: string): SearchPlatform[] {
+  const result = searchPlatformSelectionSchema.safeParse(settingsRecord(settingsJson).searchPlatforms);
+  return result.success ? result.data : [];
 }
 
 function toLabelTarget(row: LabelRow): LabelTarget {
@@ -142,11 +165,24 @@ export class JobsRepository {
     return this.get(id);
   }
 
-  public getSearchPolicy(id: string): { taskType: CreateJobInput["taskType"]; allowedRiskCategories: NonNullable<CreateJobInput["allowedRiskCategories"]> } | undefined {
+  public getSearchPolicy(id: string): {
+    taskType: CreateJobInput["taskType"];
+    allowedRiskCategories: NonNullable<CreateJobInput["allowedRiskCategories"]>;
+    searchPlatforms: SearchPlatform[];
+  } | undefined {
     const row = this.database.prepare("SELECT task_type, settings_json FROM jobs WHERE id = ?").get(id) as { task_type: CreateJobInput["taskType"]; settings_json: string } | undefined;
     if (!row) return undefined;
-    const settings = JSON.parse(row.settings_json) as CreateJobInput;
-    return { taskType: row.task_type, allowedRiskCategories: settings.allowedRiskCategories ?? [] };
+    const settings = settingsRecord(row.settings_json);
+    const allowedRiskCategories = Array.isArray(settings.allowedRiskCategories)
+      ? settings.allowedRiskCategories.filter((value): value is NonNullable<CreateJobInput["allowedRiskCategories"]>[number] => (
+          value === "adult_content" || value === "graphic_violence" || value === "self_harm"
+        ))
+      : [];
+    return {
+      taskType: row.task_type,
+      allowedRiskCategories,
+      searchPlatforms: searchPlatformsFromSettings(row.settings_json)
+    };
   }
 
   public copy(id: string, name?: string): JobDetail | undefined {

@@ -52,6 +52,37 @@ describe("job routes", () => {
     expect(reloaded.json().labels).toEqual(body.labels);
   });
 
+  it("persists search platforms through create, read, and copy while old rows expose an empty list", async () => {
+    const app = await createTestApp();
+    apps.push(app);
+    const searchPlatforms = ["taobao_tmall", "jd", "pinduoduo", "vipshop", "xiaohongshu", "douyin"];
+    const created = await app.inject({
+      method: "POST",
+      url: "/api/jobs",
+      payload: {
+        name: "平台定向任务",
+        taskType: "advertiser_product_taxonomy",
+        exportMode: "internal_research",
+        labelPaths: ["电商快销>影音电器>音箱"],
+        labelSearchProfiles: makeBilingualProfiles(["电商快销>影音电器>音箱"]),
+        searchPlatforms
+      }
+    });
+
+    expect(created.statusCode).toBe(201);
+    expect(created.json().searchPlatforms).toEqual(searchPlatforms);
+    const copied = await app.inject({ method: "POST", url: `/api/jobs/${created.json().id}/copy` });
+    expect(copied.statusCode).toBe(201);
+    expect(copied.json().searchPlatforms).toEqual(searchPlatforms);
+
+    const database = (app as typeof app & { database: import("../../src/server/database.js").AppDatabase }).database;
+    database.prepare("INSERT INTO jobs (id, name, task_type, export_mode, status, settings_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+      .run("legacy-job", "旧任务", "advertiser_product_taxonomy", "internal_research", "draft", "{}", "now", "now");
+    const legacy = await app.inject({ method: "GET", url: "/api/jobs/legacy-job" });
+    expect(legacy.statusCode).toBe(200);
+    expect(legacy.json().searchPlatforms).toEqual([]);
+  });
+
   it("keeps label order when a later line makes an existing parent a leaf", async () => {
     const app = await createTestApp();
     apps.push(app);

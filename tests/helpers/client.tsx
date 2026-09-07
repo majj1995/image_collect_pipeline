@@ -86,6 +86,7 @@ function makeMockApi(seed: MockApiSeed): { client: ApiClient; spies: MockSpies }
       name: input.name,
       taskType: input.taskType,
       exportMode: input.exportMode,
+      searchPlatforms: [...input.searchPlatforms],
       status: "draft",
       createdAt: now,
       updatedAt: now,

@@ -7,7 +7,14 @@ import SlidersHorizontal from "lucide-react/dist/esm/icons/sliders-horizontal.mj
 import X from "lucide-react/dist/esm/icons/x.mjs";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { Candidate, ProviderId, ProviderRunSummary, ProviderStatus, ReviewInput } from "../../shared/contracts.js";
+import {
+  searchPlatformLabels,
+  type Candidate,
+  type ProviderId,
+  type ProviderRunSummary,
+  type ProviderStatus,
+  type ReviewInput
+} from "../../shared/contracts.js";
 import { sanitizePublicHttpUrl } from "../../shared/public-url.js";
 import { ApiError, useApi, type JobDetail } from "../api.js";
 import { CandidateDrawer } from "../features/workbench/CandidateDrawer.js";
@@ -830,7 +837,15 @@ export function WorkbenchPage() {
   return (
     <main className="workbench-page" aria-label={`${job.name}工作台`}>
       <div className="workbench-titlebar">
-        <div><h1>{job.name}</h1><p>{job.taskType === "advertiser_product_taxonomy" ? "广告品类标注" : "内容审核"} · {hasActiveRuns ? "正在采集" : "等待审核"}</p></div>
+        <div>
+          <h1>{job.name}</h1>
+          <p>
+            {job.taskType === "advertiser_product_taxonomy" ? "广告品类标注" : "内容审核"} · {hasActiveRuns ? "正在采集" : "等待审核"}
+            {" · "}<span>{job.searchPlatforms?.length
+              ? `平台定向：${job.searchPlatforms.map((platform) => searchPlatformLabels[platform]).join("、")}`
+              : "未限定平台"}</span>
+          </p>
+        </div>
         <div className="workbench-titlebar__actions">
           <button className="button button--secondary workbench-mobile-label-button" type="button" aria-label="打开分类队列" aria-expanded={labelQueueOpen} aria-controls="mobile-label-queue" onClick={() => setLabelQueueOpen(true)}><FolderTree aria-hidden="true" size={15} />分类队列</button>
           <ProviderPicker providers={providers} selectedIds={selectedProviderIds} onChange={changeSelectedProviders} />

@@ -20,6 +20,34 @@ export const taskTypeSchema = z.enum([
 
 export const exportModeSchema = z.enum(["strict_compliance", "internal_research"]);
 
+export const searchPlatformIds = [
+  "taobao_tmall",
+  "jd",
+  "pinduoduo",
+  "vipshop",
+  "xiaohongshu",
+  "douyin"
+] as const;
+
+export const searchPlatformSchema = z.enum(searchPlatformIds);
+export type SearchPlatform = z.infer<typeof searchPlatformSchema>;
+
+export const searchPlatformLabels: Record<SearchPlatform, string> = {
+  taobao_tmall: "淘宝/天猫",
+  jd: "京东",
+  pinduoduo: "拼多多",
+  vipshop: "唯品会",
+  xiaohongshu: "小红书",
+  douyin: "抖音电商"
+};
+
+export const searchPlatformSelectionSchema = z.array(searchPlatformSchema)
+  .max(searchPlatformIds.length)
+  .refine((platforms) => new Set(platforms).size === platforms.length, {
+    message: "Search platforms must be unique."
+  })
+  .transform((platforms) => searchPlatformIds.filter((platform) => platforms.includes(platform)));
+
 export const providerIds = [
   "openverse",
   "baidu",
@@ -73,6 +101,7 @@ export const createJobInputSchema = z.object({
   name: z.string().trim().min(1).max(120),
   taskType: taskTypeSchema,
   exportMode: exportModeSchema,
+  searchPlatforms: searchPlatformSelectionSchema.default([]),
   labelPaths: z.array(labelPathSchema).min(1).max(500),
   labelSearchProfiles: z.array(labelSearchProfileSchema).min(1).max(500).optional(),
   aliases: z.array(expansionTermSchema).max(MAX_EXPANSION_TERMS).default([]),
@@ -202,6 +231,8 @@ export interface Job {
   name: string;
   taskType: TaskType;
   exportMode: ExportMode;
+  /** Empty or omitted means the job is not restricted to named commerce platforms. */
+  searchPlatforms?: SearchPlatform[];
   status: "draft" | "collecting" | "reviewing" | "ready" | "failed";
   createdAt: string;
   updatedAt: string;

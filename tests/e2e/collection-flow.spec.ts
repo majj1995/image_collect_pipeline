@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { unzipSync } from "fflate";
 
 test("创建任务、拉取本地广告图片、人工筛选并下载可追溯 ZIP", async ({ page, request }) => {
@@ -16,6 +18,14 @@ test("创建任务、拉取本地广告图片、人工筛选并下载可追溯 Z
   await page.goto("/");
   await expect(page).toHaveTitle("素材扩展台");
   await page.getByRole("button", { name: "新建采集任务" }).click();
+  const platformPicker = page.getByRole("group", { name: "平台定向（仅影响搜索）" });
+  for (const platform of ["淘宝/天猫", "京东", "拼多多", "唯品会", "小红书", "抖音电商"]) {
+    await expect(platformPicker.getByRole("checkbox", { name: platform })).toBeChecked();
+  }
+  await platformPicker.getByRole("button", { name: "清空平台" }).click();
+  await platformPicker.getByRole("checkbox", { name: "京东" }).check();
+  await platformPicker.getByRole("checkbox", { name: "小红书" }).check();
+  await page.screenshot({ path: join(tmpdir(), "image-pipeline-platform-picker.png"), fullPage: false });
   await page.getByLabel("任务名称", { exact: true }).fill(`E2E 音箱广告 ${Date.now()}`);
   await page.getByLabel("标签路径", { exact: true }).fill("电商快销>3C及电器>影音电器>音箱");
   await page.getByLabel("中文主查询词", { exact: true }).fill("音箱, 蓝牙音箱");
@@ -26,6 +36,7 @@ test("创建任务、拉取本地广告图片、人工筛选并下载可追溯 Z
   await page.getByLabel("候选素材数", { exact: true }).fill("1");
   await page.getByRole("button", { name: "创建并进入工作台" }).click();
   await expect(page).toHaveURL(/\/jobs\/[^/]+$/u);
+  await expect(page.getByText("平台定向：京东、小红书", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "继续搜索" }).click();
   const thumbnail = page.locator('img[src^="/api/media/"]').first();
@@ -53,6 +64,9 @@ test("创建任务、拉取本地广告图片、人工筛选并下载可追溯 Z
   expect(entries.every((name) => name.startsWith(`${rootDirectory}/`))).toBeTruthy();
   const files = entries.map((name) => name.slice(rootDirectory!.length + 1));
   expect(files).toContain("manifest.jsonl");
+  const datasetEntry = entries.find((name) => name.endsWith("/dataset.json"));
+  expect(datasetEntry).toBeDefined();
+  expect(JSON.parse(new TextDecoder().decode(archive[datasetEntry!])).searchPlatforms).toEqual(["jd", "xiaohongshu"]);
   expect(files.some((name) => /^images\/[^/]+\/[^/]+\.(?:jpg|png)$/u.test(name))).toBeTruthy();
   expect(files).toContain("checksums.sha256");
   expect(externalRequests).toEqual([]);
@@ -65,4 +79,5 @@ test("创建任务、拉取本地广告图片、人工筛选并下载可追溯 Z
   expect(exportBounds).not.toBeNull();
   expect(exportBounds!.x).toBeGreaterThanOrEqual(0);
   expect(exportBounds!.x + exportBounds!.width).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: join(tmpdir(), "image-pipeline-platform-workbench-mobile.png"), fullPage: false });
 });

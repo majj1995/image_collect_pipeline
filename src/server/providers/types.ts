@@ -1,7 +1,8 @@
 import type {
   ProviderCredentialMode,
   ProviderId,
-  ProviderSourceCategory
+  ProviderSourceCategory,
+  SearchPlatform
 } from "../../shared/contracts.js";
 
 export interface ProviderSearchRequest {
@@ -76,6 +77,8 @@ export interface ImageSearchProvider {
   readonly docsUrl?: string;
   readonly defaultSelected?: boolean;
   readonly supportsPagination?: boolean;
+  /** Explicit capability for provider-native platform targeting. Providers without it receive the original query plan. */
+  readonly buildPlatformQuery?: (baseQuery: string, platform: SearchPlatform) => string;
   /** Re-run completed discovery to obtain a replacement signed download URL after an exhausted download. Defaults to false. */
   readonly refreshDownloadUrlOnRetry?: boolean;
   readonly searchPolicy?: ProviderSearchPolicy;

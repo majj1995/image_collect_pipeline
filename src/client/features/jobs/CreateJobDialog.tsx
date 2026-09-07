@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import X from "lucide-react/dist/esm/icons/x.mjs";
 import { useNavigate } from "react-router-dom";
-import type { CreateJobInput, ExportMode, ModerationRiskCategory, TaskType } from "../../../shared/contracts.js";
+import {
+  searchPlatformIds,
+  searchPlatformLabels,
+  type CreateJobInput,
+  type ExportMode,
+  type ModerationRiskCategory,
+  type SearchPlatform,
+  type TaskType
+} from "../../../shared/contracts.js";
 import { ApiError, useApi } from "../../api.js";
 
 interface TaxonomyIssue {
@@ -86,6 +94,7 @@ export function CreateJobDialog({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [taskType, setTaskType] = useState<TaskType>("advertiser_product_taxonomy");
   const [exportMode, setExportMode] = useState<ExportMode>("internal_research");
+  const [searchPlatforms, setSearchPlatforms] = useState<SearchPlatform[]>([...searchPlatformIds]);
   const [allowedRiskCategories, setAllowedRiskCategories] = useState<ModerationRiskCategory[]>([]);
   const [taxonomyText, setTaxonomyText] = useState("");
   const [zhQueryTermsText, setZhQueryTermsText] = useState("");
@@ -187,6 +196,7 @@ export function CreateJobDialog({ onClose }: { onClose: () => void }) {
       name: name.trim(),
       taskType,
       exportMode,
+      searchPlatforms,
       labelPaths: taxonomy.labelPaths,
       labelSearchProfiles: taxonomy.labelPaths.map((labelPath, index) => ({
         labelPath,
@@ -285,8 +295,8 @@ export function CreateJobDialog({ onClose }: { onClose: () => void }) {
                 <fieldset className="field fieldset-segmented">
                   <legend>任务类型</legend>
                   <div className="segmented-control">
-                    <label><input type="radio" name="task-type" value="advertiser_product_taxonomy" checked={taskType === "advertiser_product_taxonomy"} onChange={() => { setTaskType("advertiser_product_taxonomy"); setAllowedRiskCategories([]); }} /><span>广告品类标注</span></label>
-                    <label><input type="radio" name="task-type" value="content_moderation" checked={taskType === "content_moderation"} onChange={() => setTaskType("content_moderation")} /><span>内容审核</span></label>
+                    <label><input type="radio" name="task-type" value="advertiser_product_taxonomy" checked={taskType === "advertiser_product_taxonomy"} onChange={() => { setTaskType("advertiser_product_taxonomy"); setAllowedRiskCategories([]); setSearchPlatforms([...searchPlatformIds]); }} /><span>广告品类标注</span></label>
+                    <label><input type="radio" name="task-type" value="content_moderation" checked={taskType === "content_moderation"} onChange={() => { setTaskType("content_moderation"); setSearchPlatforms([]); }} /><span>内容审核</span></label>
                   </div>
                 </fieldset>
                 <fieldset className="field fieldset-segmented">
@@ -324,6 +334,41 @@ export function CreateJobDialog({ onClose }: { onClose: () => void }) {
                   </div>
                 </fieldset>
               ) : null}
+              <fieldset className="platform-picker" aria-describedby="platform-picker-help">
+                <legend>平台定向（仅影响搜索）</legend>
+                <div className="platform-picker__heading">
+                  <p id="platform-picker-help">
+                    <span>平台定向只会改变搜索，不会改变标签分类、标签路径或导出标签。</span>
+                    <span>支持站点定向的来源会追加平台查询（当前为百度、SerpApi）；其他来源仍按原查询搜索。</span>
+                    <span>每个平台仅追加一条基于主查询词和主风格的查询，不展开全部同义词组合。</span>
+                  </p>
+                  <div className="platform-picker__actions">
+                    <button type="button" onClick={() => setSearchPlatforms([...searchPlatformIds])}>全选平台</button>
+                    <button type="button" onClick={() => setSearchPlatforms([])}>清空平台</button>
+                  </div>
+                </div>
+                <div className="platform-picker__options">
+                  {searchPlatformIds.map((platform) => (
+                    <label key={platform}>
+                      <input
+                        type="checkbox"
+                        checked={searchPlatforms.includes(platform)}
+                        onChange={(event) => {
+                          const checked = event.currentTarget.checked;
+                          setSearchPlatforms((prior) => {
+                            const selected = new Set(prior);
+                            if (checked) selected.add(platform);
+                            else selected.delete(platform);
+                            return searchPlatformIds.filter((candidate) => selected.has(candidate));
+                          });
+                        }}
+                      />
+                      <span>{searchPlatformLabels[platform]}</span>
+                    </label>
+                  ))}
+                </div>
+                <small>{searchPlatforms.length === 0 ? "未限定平台" : `已选择 ${searchPlatforms.length} 个平台`}</small>
+              </fieldset>
             </section>
 
             <section className="form-section" aria-labelledby="taxonomy-section-title">

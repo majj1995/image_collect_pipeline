@@ -1,5 +1,6 @@
 import type { ImageSearchProvider, NormalizedHit, ProviderSearchRequest } from "./types.js";
 import { isRecord, numberValue, providerEnvelopeError, requestJson, safeHttpUrl, stringValue } from "./common.js";
+import { localizedPlatformQuery } from "./platform-query.js";
 
 interface BaiduOptions { apiKey?: string; fetch?: typeof globalThis.fetch; }
 
@@ -27,6 +28,9 @@ export class BaiduProvider implements ImageSearchProvider {
   public readonly defaultSelected = false;
   public readonly maxResults = 30;
   public readonly supportsPagination = false;
+  public readonly buildPlatformQuery: NonNullable<ImageSearchProvider["buildPlatformQuery"]> = (baseQuery, platform) => (
+    truncateBaiduQuery(localizedPlatformQuery(baseQuery, platform))
+  );
   public readonly configured: boolean;
   public readonly queryLanguage = "zh" as const;
   private readonly apiKey: string | undefined;

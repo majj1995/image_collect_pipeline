@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { TestApp, mockApi } from "../helpers/client.js";
@@ -198,5 +198,76 @@ describe("新建采集任务", () => {
     const submitted = mockApi.spies.createJob.mock.calls[0]?.[0];
     expect(submitted).toEqual(expect.objectContaining({ taskType: "advertiser_product_taxonomy" }));
     expect(submitted).not.toHaveProperty("allowedRiskCategories");
+  });
+
+  it("广告品类默认选择全部六个平台，并支持全选和清空", async () => {
+    const user = userEvent.setup();
+    render(<TestApp initialEntries={["/"]} />);
+
+    await user.click(await screen.findByRole("button", { name: "新建采集任务" }));
+    const platforms = screen.getByRole("group", { name: "平台定向（仅影响搜索）" });
+    const names = ["淘宝/天猫", "京东", "拼多多", "唯品会", "小红书", "抖音电商"];
+    for (const name of names) expect(within(platforms).getByRole("checkbox", { name })).toBeChecked();
+    expect(within(platforms).getByRole("button", { name: "清空平台" })).toBeVisible();
+    await user.click(within(platforms).getByRole("button", { name: "清空平台" }));
+    for (const name of names) expect(within(platforms).getByRole("checkbox", { name })).not.toBeChecked();
+    await user.click(within(platforms).getByRole("button", { name: "全选平台" }));
+    for (const name of names) expect(within(platforms).getByRole("checkbox", { name })).toBeChecked();
+  });
+
+  it("平台帮助文案说明平台只影响搜索而不改变标签", async () => {
+    const user = userEvent.setup();
+    render(<TestApp initialEntries={["/"]} />);
+    await user.click(await screen.findByRole("button", { name: "新建采集任务" }));
+
+    expect(screen.getByText("平台定向只会改变搜索，不会改变标签分类、标签路径或导出标签。" )).toBeVisible();
+    expect(screen.getByText("支持站点定向的来源会追加平台查询（当前为百度、SerpApi）；其他来源仍按原查询搜索。")).toBeVisible();
+    expect(screen.getByText("每个平台仅追加一条基于主查询词和主风格的查询，不展开全部同义词组合。")).toBeVisible();
+  });
+
+  it("提交时携带选中的搜索平台，且平台选择不进入标签配置", async () => {
+    const user = userEvent.setup();
+    render(<TestApp initialEntries={["/"]} />);
+    await user.click(await screen.findByRole("button", { name: "新建采集任务" }));
+    await user.click(within(screen.getByRole("group", { name: "平台定向（仅影响搜索）" })).getByRole("button", { name: "清空平台" }));
+    await user.click(screen.getByRole("checkbox", { name: "京东" }));
+    await user.click(screen.getByRole("checkbox", { name: "小红书" }));
+    await user.type(screen.getByLabelText("任务名称"), "平台定向任务");
+    await user.type(screen.getByLabelText("标签路径"), "电商快销>影音电器>音箱");
+    await user.type(screen.getByLabelText("中文主查询词"), "音箱");
+    await user.type(screen.getByLabelText("英文主查询词"), "speaker");
+    await user.click(screen.getByRole("button", { name: "创建并进入工作台" }));
+
+    expect(mockApi.spies.createJob).toHaveBeenCalledWith(expect.objectContaining({
+      searchPlatforms: ["jd", "xiaohongshu"]
+    }));
+    expect(mockApi.spies.createJob.mock.calls[0]?.[0]).not.toHaveProperty("labelPaths", expect.arrayContaining(["京东", "小红书"]));
+  });
+
+  it("内容审核默认不选择平台，切换任务类型应用对应默认值", async () => {
+    const user = userEvent.setup();
+    render(<TestApp initialEntries={["/"]} />);
+    await user.click(await screen.findByRole("button", { name: "新建采集任务" }));
+    const platforms = () => screen.getByRole("group", { name: "平台定向（仅影响搜索）" });
+    expect(within(platforms()).getByRole("checkbox", { name: "京东" })).toBeChecked();
+    await user.click(screen.getByRole("radio", { name: "内容审核" }));
+    for (const checkbox of within(platforms()).getAllByRole("checkbox")) expect(checkbox).not.toBeChecked();
+    await user.click(screen.getByRole("radio", { name: "广告品类标注" }));
+    for (const checkbox of within(platforms()).getAllByRole("checkbox")) expect(checkbox).toBeChecked();
+  });
+
+  it("旧任务详情响应缺少平台字段时显示未限定平台", async () => {
+    mockApi.reset({ details: [{
+      id: "legacy-job",
+      name: "旧任务",
+      taskType: "advertiser_product_taxonomy",
+      exportMode: "internal_research",
+      status: "reviewing",
+      createdAt: "2026-08-29T08:00:00.000Z",
+      updatedAt: "2026-08-29T09:00:00.000Z",
+      labels: []
+    }] });
+    render(<TestApp initialEntries={["/jobs/legacy-job"]} />);
+    expect(await screen.findByText("未限定平台")).toBeVisible();
   });
 });

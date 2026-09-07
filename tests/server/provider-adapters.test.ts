@@ -87,6 +87,29 @@ describe("documented image search adapters", () => {
     expect(Object.fromEntries(url.searchParams)).toMatchObject({ engine: "google_images", q: searchRequest.query, api_key: "test-secret", hl: "zh", gl: "cn", safe: "active" });
   });
 
+  it("builds and transports provider-specific commerce platform queries", async () => {
+    const baidu = new BaiduProvider();
+    expect(baidu.buildPlatformQuery?.("蓝牙音箱 电商广告", "taobao_tmall"))
+      .toBe("淘宝/天猫 蓝牙音箱 电商广告");
+    const longBaiduQuery = baidu.buildPlatformQuery?.("超长商品".repeat(30), "jd") ?? "";
+    expect(longBaiduQuery.startsWith("京东 ")).toBe(true);
+    expect(truncateBaiduQuery(longBaiduQuery)).toBe(longBaiduQuery);
+
+    const calls: Request[] = [];
+    const serpApi = new SerpApiProvider({ apiKey: "test-secret", fetch: recordingFixtureFetch(calls, "serpapi.json") });
+    const taobaoQuery = serpApi.buildPlatformQuery?.("bluetooth speaker ecommerce advertisement", "taobao_tmall") ?? "";
+    const pinduoduoQuery = serpApi.buildPlatformQuery?.("electric toothbrush product ad", "pinduoduo") ?? "";
+    const douyinQuery = serpApi.buildPlatformQuery?.("electric toothbrush product ad", "douyin") ?? "";
+    expect(taobaoQuery).toBe("(site:taobao.com OR site:tmall.com) bluetooth speaker ecommerce advertisement");
+    expect(pinduoduoQuery).toContain("site:yangkeduo.com");
+    expect(douyinQuery).toContain("site:jinritemai.com");
+
+    await serpApi.search({ ...searchRequest, query: taobaoQuery }, AbortSignal.timeout(1000));
+    expect(new URL(calls[0]!.url).searchParams.get("q")).toBe(taobaoQuery);
+    const openverse: import("../../src/server/providers/types.js").ImageSearchProvider = new OpenverseProvider();
+    expect(openverse.buildPlatformQuery).toBeUndefined();
+  });
+
   it("passes a stable one-based page to SerpApi's zero-based image page", async () => {
     const calls: Request[] = [];
     await new SerpApiProvider({ apiKey: "test-secret", fetch: recordingFixtureFetch(calls, "serpapi.json") })

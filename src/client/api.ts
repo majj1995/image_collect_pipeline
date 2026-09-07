@@ -17,6 +17,7 @@ import {
   providerIdSchema,
   providerSourceCategorySchema,
   retryableDownloadFailureCodes,
+  searchPlatformSelectionSchema,
   searchProfileSchema,
   type LocalSettings
 } from "../shared/contracts.js";
@@ -26,6 +27,7 @@ const jobSchema = z.object({
   name: z.string(),
   taskType: z.enum(["advertiser_product_taxonomy", "content_moderation"]),
   exportMode: z.enum(["strict_compliance", "internal_research"]),
+  searchPlatforms: searchPlatformSelectionSchema.optional(),
   status: z.enum(["draft", "collecting", "reviewing", "ready", "failed"]),
   createdAt: z.string(),
   updatedAt: z.string()

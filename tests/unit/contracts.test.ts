@@ -2,6 +2,42 @@ import { describe, expect, it } from "vitest";
 import { createJobInputSchema } from "../../src/shared/contracts.js";
 
 describe("createJobInputSchema", () => {
+  it("accepts the six supported search platforms and normalizes an omitted platform list to empty", () => {
+    const searchPlatforms = ["taobao_tmall", "jd", "pinduoduo", "vipshop", "xiaohongshu", "douyin"] as const;
+    const parsed = createJobInputSchema.parse({
+      name: "平台定向查询",
+      taskType: "advertiser_product_taxonomy",
+      exportMode: "internal_research",
+      labelPaths: ["电商>音箱"],
+      searchPlatforms
+    });
+
+    expect(parsed.searchPlatforms).toEqual(searchPlatforms);
+    expect(createJobInputSchema.parse({
+      name: "兼容旧任务",
+      taskType: "advertiser_product_taxonomy",
+      exportMode: "internal_research",
+      labelPaths: ["电商>音箱"]
+    }).searchPlatforms).toEqual([]);
+    expect(createJobInputSchema.parse({
+      name: "平台顺序归一化",
+      taskType: "advertiser_product_taxonomy",
+      exportMode: "internal_research",
+      labelPaths: ["电商>音箱"],
+      searchPlatforms: ["douyin", "jd"]
+    }).searchPlatforms).toEqual(["jd", "douyin"]);
+  });
+
+  it("rejects unsupported and duplicate search platforms", () => {
+    const base = {
+      name: "平台校验",
+      taskType: "advertiser_product_taxonomy" as const,
+      exportMode: "internal_research" as const,
+      labelPaths: ["电商>音箱"]
+    };
+    expect(createJobInputSchema.safeParse({ ...base, searchPlatforms: ["amazon"] }).success).toBe(false);
+    expect(createJobInputSchema.safeParse({ ...base, searchPlatforms: ["jd", "jd"] }).success).toBe(false);
+  });
   it("accepts a taxonomy task and rejects an empty label list", () => {
     expect(
       createJobInputSchema.parse({
